@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phone Opt-In Finder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center space-x-3 shrink-0">
+        <div class="p-2 bg-indigo-600/20 border border-indigo-500/30 rounded-xl text-indigo-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+            OptIn Finder
+          </h1>
+          <p class="text-xs text-slate-400 hidden sm:block">Automated Phone Field Discovery</p>
+        </div>
+      </div>
+
+      <!-- Main Search Input Bar -->
+      <form id="searchForm" class="flex-1 max-w-2xl flex items-center gap-2">
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input 
+            type="text" 
+            id="searchInput"
+            value='site:.com "enter your phone number" "subscribe"'
+            placeholder="Enter search query..."
+            class="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+            required
+          />
+        </div>
+        <button 
+          type="submit" 
+          id="searchBtn"
+          class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm rounded-lg shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition cursor-pointer"
+        >
+          <span>Scan Web</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Status Indicator -->
+      <div class="hidden lg:flex items-center gap-2 text-xs font-mono text-slate-400 border border-slate-800 bg-slate-900 px-3 py-1.5 rounded-full">
+        <span id="statusDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span id="statusText">System Ready</span>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Controls & Filters -->
+    <div class="lg:col-span-4 space-y-6">
+      
+      <!-- Scan Filters Panel -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+          </svg>
+          Scan Parameters
+        </h2>
+
+        <div class="space-y-4">
+          <!-- Max Results Slider -->
+          <div>
+            <div class="flex justify-between text-xs text-slate-400 mb-1.5 font-medium">
+              <span>Max Results to Scan</span>
+              <span id="maxResultsValue" class="text-indigo-400 font-mono">15</span>
+            </div>
+            <input 
+              type="range" 
+              id="maxResults" 
+              min="5" 
+              max="50" 
+              value="15" 
+              class="w-full accent-indigo-500 bg-slate-800 rounded-lg h-2 cursor-pointer"
+              oninput="document.getElementById('maxResultsValue').innerText = this.value"
+            />
+          </div>
+
+          <!-- Filter Keywords -->
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1.5">Target Detection Keywords</label>
+            <div class="flex flex-wrap gap-1.5 p-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-slate-300">
+              <span class="bg-indigo-950 border border-indigo-800 text-indigo-300 px-2 py-0.5 rounded">type="tel"</span>
+              <span class="bg-indigo-950 border border-indigo-800 text-indigo-300 px-2 py-0.5 rounded">phone</span>
+              <span class="bg-indigo-950 border border-indigo-800 text-indigo-300 px-2 py-0.5 rounded">mobile</span>
+              <span class="bg-indigo-950 border border-indigo-800 text-indigo-300 px-2 py-0.5 rounded">sms</span>
+            </div>
+          </div>
+
+          <!-- Auto-Open Toggle -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+            <div>
+              <span class="text-xs font-medium text-slate-300 block">Auto-Open First Match</span>
+              <span class="text-[11px] text-slate-500">Launch URL in new tab when detected</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="autoOpenToggle" class="sr-only peer" checked>
+              <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Activity Log -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm flex flex-col h-72">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            Live Activity Log
+          </h2>
+          <button id="clearLogBtn" class="text-xs text-slate-500 hover:text-slate-300 transition">Clear</button>
+        </div>
+
+        <div id="logContainer" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs overflow-y-auto space-y-1 text-slate-400">
+          <div class="text-slate-600">[System]: Ready to initiate crawler scan...</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Results Stream -->
+    <div class="lg:col-span-8 flex flex-col space-y-4">
+      
+      <!-- Stats / Control Bar -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-200">Discovered Websites</h2>
+          <p class="text-xs text-slate-400">Pages with validated phone opt-in inputs</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 rounded-full">
+            Matches Found: <strong id="matchesCount" class="text-white font-bold">0</strong>
+          </span>
+          <button id="clearResultsBtn" class="px-3 py-1 text-xs border border-slate-800 hover:bg-slate-800 rounded-lg text-slate-400 transition">
+            Clear Results
+          </button>
+        </div>
+      </div>
+
+      <!-- Results List Container -->
+      <div id="resultsContainer" class="space-y-3 flex-1">
+        <!-- Empty State -->
+        <div id="emptyState" class="bg-slate-900/50 border border-dashed border-slate-800 rounded-xl p-12 text-center">
+          <div class="w-12 h-12 mx-auto mb-3 bg-slate-800/80 rounded-full flex items-center justify-center text-slate-500">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-sm font-medium text-slate-300">No websites scanned yet</h3>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+            Click 'Scan Web' above to start searching for active phone opt-in forms.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // Simulated mock domain dataset for rich demonstration
+    const mockWebsites = [
+      {
+        title: "UrbanThreads - Join VIP SMS Club & Get 15% Off",
+        url: "https://example-urbanthreads.com/vip-signup",
+        fieldType: "input[type='tel']",
+        fieldHtml: '<input type="tel" name="phone" placeholder="(555) 000-0000" />',
+        hasOptin: true
+      },
+      {
+        title: "Tech Pulse Daily - Developer Newsletter & Alerts",
+        url: "https://example-techpulse.io/subscribe",
+        fieldType: "input[type='email'] only",
+        fieldHtml: '<input type="email" placeholder="you@domain.com" />',
+        hasOptin: false
+      },
+      {
+        title: "Gourmet Bites - Text Alerts for Daily Specials",
+        url: "https://example-gourmetbites.net/sms-alerts",
+        fieldType: "input[name='mobile_phone']",
+        fieldHtml: '<input type="text" name="mobile_phone" id="user-mobile" />',
+        hasOptin: true
+      },
+      {
+        title: "Apex Fitness - Member Sign Up & Mobile Notifications",
+        url: "https://example-apexfit.com/join",
+        fieldType: "input[type='tel']",
+        fieldHtml: '<input type="tel" id="sms-optin" class="form-input" />',
+        hasOptin: true
+      },
+      {
+        title: "Global News Blog - Understanding Mobile Marketing",
+        url: "https://example-news.org/blog/sms-trends",
+        fieldType: "None (Informational Blog)",
+        fieldHtml: 'No inputs found on page',
+        hasOptin: false
+      },
+      {
+        title: "EcoGear Outdoors - Flash Sale Text Alerts",
+        url: "https://example-ecogear.com/text-deals",
+        fieldType: "input[placeholder='Enter mobile number']",
+        fieldHtml: '<input type="text" placeholder="Enter mobile number" />',
+        hasOptin: true
+      }
+    ];
+
+    // DOM Elements
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const maxResultsInput = document.getElementById('maxResults');
+    const autoOpenToggle = document.getElementById('autoOpenToggle');
+    const logContainer = document.getElementById('logContainer');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const emptyState = document.getElementById('emptyState');
+    const matchesCount = document.getElementById('matchesCount');
+    const clearLogBtn = document.getElementById('clearLogBtn');
+    const clearResultsBtn = document.getElementById('clearResultsBtn');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+
+    let totalMatches = 0;
+    let isScanning = false;
+
+    // Helper: Add log message
+    function addLog(msg, type = 'info') {
+      const entry = document.createElement('div');
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+      
+      let colorClass = 'text-slate-400';
+      if (type === 'success') colorClass = 'text-emerald-400 font-semibold';
+      if (type === 'skip') colorClass = 'text-slate-500';
+      if (type === 'warn') colorClass = 'text-amber-400';
+
+      entry.className = colorClass;
+      entry.innerHTML = `<span class="text-slate-600">[${time}]</span> ${msg}`;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    // Helper: Create Result Card Component
+    function createCard(data) {
+      const card = document.createElement('div');
+      card.className = "bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm hover:border-slate-700 transition space-y-3 animate-fade-in";
+      
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <h3 class="font-medium text-slate-100 text-sm hover:text-indigo-400 transition cursor-pointer">
+              ${data.title}
+            </h3>
+            <a href="${data.url}" target="_blank" rel="noopener noreferrer" class="text-xs text-indigo-400 hover:underline flex items-center gap-1 font-mono">
+              <span>${data.url}</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            </a>
+          </div>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+            Opt-In Found
+          </span>
+        </div>
+
+        <div class="bg-slate-950 rounded-lg p-2.5 border border-slate-800/80 font-mono text-xs text-slate-300 flex items-center justify-between">
+          <span class="text-slate-500">Detected Element:</span>
+          <code class="text-indigo-300 bg-indigo-950/50 px-2 py-0.5 rounded border border-indigo-900/50">${data.fieldType}</code>
+        </div>
+
+        <div class="pt-2 flex items-center justify-between">
+          <span class="text-[11px] text-slate-500">Status: 200 OK • HTML Validated</span>
+          <button onclick="window.open('${data.url}', '_blank')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+            <span>Open Website</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+          </button>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // Simulated Scanning Process
+    async function runScan(e) {
+      if (e) e.preventDefault();
+      if (isScanning) return;
+
+      const query = searchInput.value.trim();
+      const maxCount = parseInt(maxResultsInput.value);
+      if (!query) return;
+
+      isScanning = true;
+      searchBtn.disabled = true;
+      searchBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      statusDot.className = "w-2 h-2 rounded-full bg-amber-500 animate-ping";
+      statusText.innerText = "Scanning Web...";
+
+      addLog(`Initiating search query: "${query}"`);
+      addLog(`Fetching top ${maxCount} search engine results...`);
+
+      // Hide Empty State on first scan
+      if (emptyState) emptyState.style.display = 'none';
+
+      let autoOpened = false;
+
+      for (let i = 0; i < Math.min(maxCount, 8); i++) {
+        const item = mockWebsites[i % mockWebsites.length];
+        
+        addLog(`Requesting HTML: ${item.url}...`);
+        await new Promise(r => setTimeout(r, 600)); // Simulate HTTP request delay
+
+        if (item.hasOptin) {
+          addLog(`[MATCH FOUND] Phone input detected in ${item.url}`, 'success');
+          
+          const card = createCard(item);
+          resultsContainer.appendChild(card);
+          
+          totalMatches++;
+          matchesCount.innerText = totalMatches;
+
+          // Auto open feature
+          if (autoOpenToggle.checked && !autoOpened) {
+            autoOpened = true;
+            addLog(`Auto-opening first result in new window...`, 'warn');
+            window.open(item.url, '_blank');
+          }
+
+        } else {
+          addLog(`[SKIP] No phone input fields on ${item.url}`, 'skip');
+        }
+      }
+
+      addLog(`Scan complete. ${totalMatches} total opt-in forms found.`, 'success');
+      
+      statusDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+      statusText.innerText = "System Ready";
+      isScanning = false;
+      searchBtn.disabled = false;
+      searchBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // Event Listeners
+    searchForm.addEventListener('submit', runScan);
+
+    clearLogBtn.addEventListener('click', () => {
+      logContainer.innerHTML = '<div class="text-slate-600">[System]: Log cleared.</div>';
+    });
+
+    clearResultsBtn.addEventListener('click', () => {
+      resultsContainer.innerHTML = '';
+      if (emptyState) {
+        resultsContainer.appendChild(emptyState);
+        emptyState.style.display = 'block';
+      }
+      totalMatches = 0;
+      matchesCount.innerText = '0';
+      addLog('Results cleared.');
+    });
+  </script>
+</body>
+</html>
