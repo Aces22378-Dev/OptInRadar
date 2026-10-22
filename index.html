@@ -3,288 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OptInRadar - High-Speed Live Dashboard</title>
+  <title>OptInRadar - Automated Live Scanner</title>
   <style>
     :root {
       --bg: #030712;
       --surface: #0b1329;
       --surface-border: #1e293b;
       --accent: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.15);
       --text: #f8fafc;
       --muted: #64748b;
       --green: #10b981;
-      --danger: #f43f5e;
     }
-
-    * { box-sizing: border-box; }
-
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 40px 20px;
+      margin: 0; font-family: system-ui, sans-serif;
+      background-color: var(--bg); color: var(--text); padding: 40px 20px;
     }
-
-    .container {
-      max-width: 860px;
-      margin: 0 auto;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 24px;
-      border-bottom: 1px solid var(--surface-border);
-      margin-bottom: 32px;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: var(--accent-glow);
-      border: 1px solid var(--accent);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    .tag {
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--green);
-      border: 1px solid rgba(10, 185, 129, 0.3);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-    }
-
-    .panel-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-    }
-
-    .input-row {
-      display: grid;
-      grid-template-columns: 2fr 3fr 1fr auto;
-      gap: 10px;
-    }
-
-    input {
-      background: var(--bg);
-      border: 1px solid var(--surface-border);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 14px;
-      outline: none;
-    }
-
-    input:focus {
-      border-color: var(--accent);
-    }
-
-    .btn {
-      background: var(--accent);
-      color: #030712;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .btn:hover { opacity: 0.9; }
-
-    .btn-outline {
-      background: transparent;
-      color: var(--danger);
-      border: 1px solid var(--danger);
-    }
-
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 20px;
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid var(--surface-border);
-      border-radius: 10px;
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 24px;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: border-color 0.2s;
-    }
-
-    .card:hover {
-      border-color: rgba(56, 189, 248, 0.4);
-    }
-
-    .card-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .card-url {
-      font-size: 13px;
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    .badge-pill {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 3px 10px;
-      background: var(--accent-glow);
-      color: var(--accent);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 12px;
-      font-size: 11px;
-    }
-
-    .empty {
-      text-align: center;
-      padding: 48px;
-      color: var(--muted);
-      border: 1px dashed var(--surface-border);
-      border-radius: 12px;
-    }
+    .container { max-width: 800px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--surface-border); padding-bottom: 20px; margin-bottom: 30px; }
+    h1 { margin: 0; color: var(--accent); font-size: 24px; }
+    .card { background: var(--surface); border: 1px solid var(--surface-border); border-radius: 10px; padding: 20px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .card-url { font-size: 13px; color: var(--accent); text-decoration: none; }
+    .badge { display: inline-block; margin-top: 8px; padding: 3px 10px; background: rgba(16, 185, 129, 0.1); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; font-size: 11px; }
+    .btn { background: var(--accent); color: #030712; padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none; }
+    .empty { text-align: center; padding: 40px; color: var(--muted); border: 1px dashed var(--surface-border); border-radius: 10px; }
   </style>
 </head>
 <body>
-
   <div class="container">
     <header>
-      <div class="logo">
-        <div class="logo-icon">📡</div>
-        <div>
-          <h1>OptInRadar</h1>
-        </div>
-      </div>
-      <span class="tag">● Active Scanner</span>
+      <h1>📡 OptInRadar</h1>
+      <span style="color: var(--green); font-size: 13px;">● Cloud Scanner Active</span>
     </header>
-
-    <!-- Quick Add Panel -->
-    <div class="panel">
-      <div class="panel-title">Add Discovered Target</div>
-      <div class="input-row">
-        <input type="text" id="title" placeholder="Site Title">
-        <input type="text" id="url" placeholder="https://">
-        <input type="text" id="tag" placeholder="input[type='tel']">
-        <button class="btn" onclick="addResult()">+ Add</button>
-      </div>
-    </div>
-
-    <div class="status-bar">
-      <span id="status">Ready. Awaiting scan results...</span>
-      <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="clearResults()">Clear All</button>
-    </div>
-
-    <div id="results"></div>
+    <div id="resultsContainer">Loading automated scan results...</div>
   </div>
 
   <script>
-    let data = JSON.parse(localStorage.getItem('radar_data')) || [];
+    async function loadResults() {
+      const container = document.getElementById('resultsContainer');
+      try {
+        const response = await fetch('results.json?t=' + Date.now());
+        const data = await response.json();
 
-    function render() {
-      const container = document.getElementById('results');
-      const status = document.getElementById('status');
-      container.innerHTML = "";
+        if (!data || data.length === 0) {
+          container.innerHTML = `<div class="empty">No opt-in pages found yet. The cloud scanner runs automatically or via your extension trigger.</div>`;
+          return;
+        }
 
-      if (data.length === 0) {
-        container.innerHTML = `<div class="empty">No active opt-in pages stored yet. Run your Python scanner to populate results.</div>`;
-        status.innerText = "Radar empty.";
-        return;
+        container.innerHTML = "";
+        data.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div>
+              <div class="card-title">${item.title}</div>
+              <a href="${item.url}" target="_blank" class="card-url">${item.url} ↗</a><br>
+              <span class="badge">✓ Verified Free Opt-In</span>
+            </div>
+            <a href="${item.url}" target="_blank" class="btn">Visit Page</a>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        container.innerHTML = `<div class="empty">Awaiting first scan generation...</div>`;
       }
-
-      status.innerText = `Showing ${data.length} verified phone opt-in destination(s).`;
-
-      data.forEach((item, index) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <div>
-            <div class="card-title">${item.title}</div>
-            <a href="${item.url}" target="_blank" class="card-url">${item.url} ↗</a><br>
-            <span class="badge-pill">✓ Verified Free Opt-In</span>
-          </div>
-          <div style="display:flex; gap:8px;">
-            <a href="${item.url}" target="_blank" class="btn" style="text-decoration:none;">Visit Page</a>
-            <button class="btn btn-outline" onclick="remove(${index})">✕</button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
     }
 
-    function addResult() {
-      const t = document.getElementById('title').value;
-      const u = document.getElementById('url').value;
-      if (!t || !u) return alert('Enter both title and URL');
-      data.unshift({ title: t, url: u });
-      localStorage.setItem('radar_data', JSON.stringify(data));
-      document.getElementById('title').value = '';
-      document.getElementById('url').value = '';
-      render();
-    }
-
-    function remove(i) {
-      data.splice(i, 1);
-      localStorage.setItem('radar_data', JSON.stringify(data));
-      render();
-    }
-
-    function clearResults() {
-      data = [];
-      localStorage.removeItem('radar_data');
-      render();
-    }
-
-    window.addEventListener('DOMContentLoaded', render);
+    window.addEventListener('DOMContentLoaded', loadResults);
   </script>
 </body>
 </html>
