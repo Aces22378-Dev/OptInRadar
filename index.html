@@ -3,13 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OptInRadar - Scan Results</title>
+  <title>OptInRadar - Live Results Dashboard</title>
   <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --danger: #ef4444;
+    }
+
     body {
       margin: 0;
       font-family: system-ui, -apple-system, sans-serif;
-      background-color: #0f172a;
-      color: #f8fafc;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
       padding: 40px 20px;
     }
 
@@ -19,7 +30,7 @@
     }
 
     header {
-      border-bottom: 1px solid #334155;
+      border-bottom: 1px solid var(--border);
       padding-bottom: 20px;
       margin-bottom: 30px;
       display: flex;
@@ -29,23 +40,88 @@
 
     h1 {
       margin: 0;
-      color: #38bdf8;
+      color: var(--accent);
       font-size: 28px;
     }
 
     .status-bar {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 15px;
       margin-bottom: 25px;
       font-size: 14px;
-      color: #94a3b8;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .input-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    .input-panel h3 {
+      margin-top: 0;
+      color: var(--accent);
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: var(--text-main);
+      font-size: 14px;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #0f172a;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+      color: white;
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      color: white;
     }
 
     .card {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 20px;
       margin-bottom: 15px;
@@ -63,32 +139,28 @@
 
     .card-url {
       font-size: 13px;
-      color: #94a3b8;
+      color: var(--text-muted);
+      word-break: break-all;
     }
 
     .badge {
       display: inline-block;
       margin-top: 8px;
       background: rgba(56, 189, 248, 0.1);
-      color: #38bdf8;
-      border: 1px solid #38bdf8;
+      color: var(--accent);
+      border: 1px solid var(--accent);
       padding: 2px 8px;
       border-radius: 12px;
       font-size: 11px;
     }
 
-    .btn {
-      background: #0284c7;
-      color: white;
-      text-decoration: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 13px;
-    }
-
-    .btn:hover {
-      background: #0369a1;
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      background: var(--card-bg);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
     }
   </style>
 </head>
@@ -97,63 +169,109 @@
   <div class="container">
     <header>
       <h1>📡 OptInRadar</h1>
-      <span>Phone Opt-In Results</span>
+      <span>Live Results Dashboard</span>
     </header>
 
-    <div class="status-bar" id="statusBar">
-      Ready. Click "Find Pages" from your extension or use the button below to scan.
+    <!-- Add Real Result Panel -->
+    <div class="input-panel">
+      <h3>Add Discovered Website</h3>
+      <div class="form-group">
+        <input type="text" id="siteTitle" placeholder="Website Title (e.g. Brand SMS Club)">
+        <input type="text" id="siteUrl" placeholder="URL (e.g. https://example.com/signup)">
+        <input type="text" id="siteTag" placeholder="Tag (e.g. input[type='tel'])" style="max-width: 180px;">
+        <button class="btn" onclick="addResult()">Add to Radar</button>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <span id="statusText">Loaded saved results from browser storage.</span>
+      <button class="btn btn-danger" onclick="clearResults()">Clear All</button>
     </div>
 
     <div id="resultsList"></div>
   </div>
 
   <script>
-    // Real-world example websites that feature phone opt-in forms
-    const sampleResults = [
-      {
-        title: "Nike VIP Text Sign-Up",
-        url: "https://www.nike.com",
-        tag: "input[type='tel']"
-      },
-      {
-        title: "Target Mobile Alerts",
-        url: "https://www.target.com",
-        tag: "input[name='phone']"
-      }
-    ];
+    // Load saved results or default to empty list
+    let results = JSON.parse(localStorage.getItem('optin_results')) || [];
 
-    function startScan() {
-      const statusBar = document.getElementById('statusBar');
+    function renderResults() {
       const resultsList = document.getElementById('resultsList');
-
-      statusBar.innerText = "Scanning live web sources for active phone opt-in forms...";
+      const statusText = document.getElementById('statusText');
+      
       resultsList.innerHTML = "";
 
-      setTimeout(() => {
-        statusBar.innerText = "Scan complete! Displaying active phone opt-in pages below:";
+      if (results.length === 0) {
+        resultsList.innerHTML = `
+          <div class="empty-state">
+            No real websites saved yet. Use the panel above to add websites found by your scanner!
+          </div>
+        `;
+        statusText.innerText = "Radar is currently empty.";
+        return;
+      }
 
-        sampleResults.forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <div>
-              <div class="card-title">${item.title}</div>
-              <div class="card-url">${item.url}</div>
-              <span class="badge">Detected Field: ${item.tag}</span>
-            </div>
-            <a href="${item.url}" target="_blank" class="btn">Visit Site ↗</a>
-          `;
-          resultsList.appendChild(card);
-        });
-      }, 1200);
+      statusText.innerText = `Displaying ${results.length} active phone opt-in page(s).`;
+
+      results.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div>
+            <div class="card-title">${item.title}</div>
+            <div class="card-url"><a href="${item.url}" target="_blank" style="color: #38bdf8; text-decoration: none;">${item.url} ↗</a></div>
+            <span class="badge">Field: ${item.tag || 'input[type="tel"]'}</span>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="${item.url}" target="_blank" class="btn">Visit Site</a>
+            <button class="btn btn-danger" onclick="deleteResult(${index})">Delete</button>
+          </div>
+        `;
+        resultsList.appendChild(card);
+      });
     }
 
-    // Auto-scan if opened directly by the Chrome Extension button
-    window.addEventListener('DOMContentLoaded', () => {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('autoScan') === 'true') {
-        startScan();
+    function addResult() {
+      const titleInput = document.getElementById('siteTitle');
+      const urlInput = document.getElementById('siteUrl');
+      const tagInput = document.getElementById('siteTag');
+
+      const title = titleInput.value.trim();
+      const url = urlInput.value.trim();
+      const tag = tagInput.value.trim() || "input[type='tel']";
+
+      if (!title || !url) {
+        alert("Please enter both a title and a valid URL.");
+        return;
       }
+
+      results.unshift({ title, url, tag });
+      localStorage.setItem('optin_results', JSON.stringify(results));
+
+      titleInput.value = '';
+      urlInput.value = '';
+      tagInput.value = '';
+
+      renderResults();
+    }
+
+    function deleteResult(index) {
+      results.splice(index, 1);
+      localStorage.setItem('optin_results', JSON.stringify(results));
+      renderResults();
+    }
+
+    function clearResults() {
+      if (confirm("Are you sure you want to clear all saved results?")) {
+        results = [];
+        localStorage.removeItem('optin_results');
+        renderResults();
+      }
+    }
+
+    // Initial render on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderResults();
     });
   </script>
 </body>
