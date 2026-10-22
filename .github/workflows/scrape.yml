@@ -1,35 +1,36 @@
 name: OptInRadar Auto-Scraper
 
 on:
-  workflow_dispatch: # Allows you to trigger a scan manually from GitHub
+  workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *' # Runs automatically every 6 hours
+    - cron: '0 */6 * * *'
 
 jobs:
   run-scraper:
-  runs-on: ubuntu-latest
-  permissions:
-    contents: write
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        pip install requests beautifulsoup4 duckduckgo_search
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-    - name: Run Python Finder Script
-      run: python optin_finder.py
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 duckduckgo_search
 
-    - name: Commit and push results
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add results.json
-        git commit -m "Auto-update opt-in scan results" || exit 0
-        git push
+      - name: Run Python Finder Script
+        run: python optin_finder.py
+
+      - name: Commit and push results
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add results.json
+          git commit -m "Auto-update opt-in scan results" || exit 0
+          git push
